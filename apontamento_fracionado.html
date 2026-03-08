@@ -1,342 +1,648 @@
-<html>
-    <header>
-        <title>Apontamentos Fracionados</title>
-    </header>
-
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rateio TMO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body {
-            text-align: center; 
-            background-color: whitesmoke; 
-            color: rgb(41, 41, 102);
+        :root {
+            --navy: #1a1a3e;
+            --navy-mid: #252560;
+            --navy-light: #2e2e7a;
+            --accent: #4f8ef7;
+            --accent-bright: #6fa3ff;
+            --danger: #e03a3a;
+            --success: #2ecc71;
+            --text: #e8e8f5;
+            --text-muted: #9090bb;
+            --card-bg: rgba(255,255,255,0.04);
+            --border: rgba(79,142,247,0.18);
+            --glass: rgba(26,26,62,0.85);
         }
 
-        .box {
-            text-align: center; 
-            align-items: center; 
-            justify-content: center; 
-            display: flex;
-        }
-
-        .box-horarios {
-            border-radius: 10px; 
-            background-color: rgb(41, 41, 102); 
-            color: whitesmoke; 
-            display: flex; 
-            width: 80%; 
-            align-items: center; 
-            justify-content: center;
-        }
-
-        .inicio {
-            display: flex; 
-            text-align: center; 
-            width: 35%; 
-            height: 100px;
-        }
-
-        .final {
-            border-left: 1px solid whitesmoke; 
-            margin-left: 40px; 
-            display: flex; 
-            text-align: center; 
-            width: 35%; 
-            height: 100px;
-        }
-
-        .box-hora-minuto {
-            margin: 0; 
-            padding: 0; 
-            align-self: center;
-        }
-
-        .box-hora-minuto p {
-            display: flexbox;
-            padding: 0; 
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .box-hora-minuto #horaI, #horaF {
-            color: rgb(41, 41, 102); 
+        body {
+            font-family: 'Syne', sans-serif;
+            background: var(--navy);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px 60px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Background grid effect */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(79,142,247,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(79,142,247,0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Glow blob */
+        body::after {
+            content: '';
+            position: fixed;
+            top: -180px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 700px;
+            height: 400px;
+            background: radial-gradient(ellipse, rgba(79,142,247,0.12) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 640px;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* ── Header ── */
+        header {
+            text-align: center;
+            padding-bottom: 8px;
+        }
+
+        header .label {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        header h1 {
+            font-size: 2.6rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, #fff 30%, var(--accent-bright));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 24px;
+            backdrop-filter: blur(12px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(79,142,247,0.5), transparent);
+        }
+
+        .card-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 18px;
+        }
+
+        /* ── Horários ── */
+        .horarios-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .time-group {
+            background: rgba(79,142,247,0.06);
+            border: 1px solid rgba(79,142,247,0.12);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .time-group-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .time-group-label .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        .time-group-label.final-label .dot {
+            background: #a78bfa;
+        }
+
+        .time-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .input-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-wrap label {
+            font-size: 10px;
+            font-family: 'Space Mono', monospace;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .input-wrap input {
+            font-family: 'Space Mono', monospace;
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 10px 12px;
+            text-align: center;
+            width: 100%;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+        }
+
+        .input-wrap input:focus {
+            border-color: var(--accent);
+            background: rgba(79,142,247,0.08);
+            box-shadow: 0 0 0 3px rgba(79,142,247,0.12);
+        }
+
+        .input-wrap input::placeholder {
+            color: rgba(255,255,255,0.18);
+            font-size: 14px;
+        }
+
+        /* ── TMO Select row ── */
+        .tmo-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .select-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .select-wrap label,
+        .tempo-wrap label {
+            font-size: 10px;
+            font-family: 'Space Mono', monospace;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        select {
+            font-family: 'Syne', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            background: #1e1e4a;
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: 10px;
-            width: 90%;
-            height: 30px;
-            border: none;
-            padding: 0px;
-            margin: 0px;
-            text-align: center;
+            padding: 10px 14px;
+            width: 100%;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            -webkit-appearance: none;
         }
 
-        .box-hora-minuto #minI, #minF {
-            color: rgb(41, 41, 102); 
+        select option {
+            background: #1e1e4a;
+            color: #fff;
+        }
+
+        select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(79,142,247,0.12);
+        }
+
+        .tempo-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 110px;
+        }
+
+        .tempo-wrap input {
+            font-family: 'Space Mono', monospace;
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: 10px;
-            width: 90%;
-            height: 30px;
+            padding: 10px 12px;
+            text-align: center;
+            width: 100%;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .tempo-wrap input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(79,142,247,0.12);
+        }
+
+        .tempo-wrap input::placeholder {
+            color: rgba(255,255,255,0.2);
+            font-size: 11px;
+        }
+
+        .btn-add {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
             border: none;
-            padding: 0px;
-            margin: 0px;
-            text-align: center;
-        }
-
-        h3 {
-            padding: 20px;
-        }
-
-        .final h3 {
-            padding: 20px; 
-            padding-left: 40px;
-        }
-
-        .select-tmos {
-            display: flex; 
-            width: 80%; 
-            height: 60px; 
-            padding: 10px; 
-            align-items: center; 
-            justify-content: center;
-        }
-
-        #tmos {
-            color: rgb(41, 41, 102); 
-            text-align: center; 
-            border-radius: 10px; 
-            width: 70%; 
-            height: 30px; 
-            border: none; 
-            padding: 0px; margin: 5px;
-        }
-        
-        #tmosTempo {
-            color: rgb(41, 41, 102); 
-            text-align: center; 
-            border-radius: 10px; 
-            width: 20%; 
-            height: 30px; 
-            border: none; 
-            padding: 0px; 
-            margin: 5px;
-        }
-
-        .select-tmos button {
-            border-radius: 10px;
-            width: 5%; 
-            height: 30px; 
-            border: none; 
-            padding: 0px; 
-            margin: 5px; 
-            background-color: green; 
-            color: whitesmoke;
-        }
-
-        #mostraApontamentos {
-            align-content: center; 
-            text-align: center;
-        }
-
-        #mostraApontamentos button {
-            margin-bottom: 20px;  
-            background-color: #c50c0c; 
-            border-radius: 5px; 
-            border: none;
-            color: white; 
-            width: 60%; 
-            height: 40px;
-        }
-
-        #mostraInicio {
-            text-align: center;
-            align-content: center;
-            justify-items: center;
-        }
-
-        #mostraI {
-            color: rgb(41, 41, 102); 
-            width: 60%;
-            height: 30px;
-            border: 1PX solid rgb(41, 41, 102);
-            border-radius: 5px;
+            background: linear-gradient(135deg, var(--accent), #3a6fd8);
+            color: #fff;
+            font-size: 22px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
             align-items: center;
             justify-content: center;
-            display: grid;
+            flex-shrink: 0;
+            transition: transform 0.15s, box-shadow 0.2s;
+            box-shadow: 0 4px 16px rgba(79,142,247,0.3);
+            align-self: flex-end;
+        }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79,142,247,0.45);
+        }
+
+        .btn-add:active {
+            transform: scale(0.95);
+        }
+
+        /* ── Resultados ── */
+        #results-card {
+            display: none;
+        }
+
+        #results-card.visible {
+            display: block;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .badge-inicio {
+            font-family: 'Space Mono', monospace;
+            font-size: 13px;
+            background: rgba(79,142,247,0.15);
+            border: 1px solid rgba(79,142,247,0.3);
+            color: var(--accent-bright);
+            border-radius: 8px;
+            padding: 6px 12px;
+            letter-spacing: 1px;
+        }
+
+        .btn-clear {
+            font-family: 'Syne', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            background: rgba(224,58,58,0.12);
+            border: 1px solid rgba(224,58,58,0.3);
+            color: #f87171;
+            border-radius: 8px;
+            padding: 6px 14px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-clear:hover {
+            background: rgba(224,58,58,0.22);
+            transform: translateY(-1px);
         }
 
         #apontamento {
-            justify-items: center;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
+        .apontamento-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 14px 18px;
+            animation: slideIn 0.25s ease forwards;
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        @keyframes slideIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .apontamento-time {
+            font-family: 'Space Mono', monospace;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--accent-bright);
+            background: rgba(79,142,247,0.1);
+            border-radius: 8px;
+            padding: 6px 10px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .apontamento-divider {
+            width: 1px;
+            height: 28px;
+            background: rgba(255,255,255,0.1);
+            flex-shrink: 0;
+        }
+
+        .apontamento-nome {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            flex: 1;
+        }
+
+        /* ── Empty state ── */
+        .empty-hint {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13px;
+            padding: 20px 0 4px;
+            font-family: 'Space Mono', monospace;
+            letter-spacing: 1px;
+        }
     </style>
+</head>
+<body>
 
-    <script>
+<div class="container">
 
-        let minTotaisGastos
-        let minTotalCobrado = 0
-        let tmosUsadas = Array()
-        let hora, min, i=0
-        let minInicio, horaInicio, minFinal, horaFinal
-
-        function calculaMinTotalGasto(horaFinal, minFinal, horaInicio, minInicio) {
-            let resultado
-
-            // Calcula minutos totais gastos
-            if (minFinal - minInicio == 60){ // caso 01
-                resultado = (horaFinal - horaInicio) * 60 
-            } else { // caso 02
-                resultado = (horaFinal - horaInicio ) * 60 
-                if (minFinal == 0){ // caso 03
-                    resultado = (horaFinal - horaInicio -1 ) * 60
-                    minFinal = 60
-                }
-                resultado += minFinal - minInicio 
-            }
-
-            return resultado
-        }        
-
-        function guardaTMO(){
-
-            // Recupera os horas e minutos finais
-            horaFinal = parseInt(document.getElementById("horaF").value)
-            minFinal = parseInt(document.getElementById("minF").value)
-            horaInicio = parseInt(document.getElementById("horaI").value)
-            minInicio = parseInt(document.getElementById("minI").value)
-
-            // Armazena tempo gasto
-            minTotaisGastos = calculaMinTotalGasto(horaFinal, minFinal, horaInicio, minInicio)
-
-            // Recupera TMO e tempo cobrado
-            let nomeTMO = document.getElementById("tmos").value
-            let tempoTMO = parseFloat(document.getElementById("tmosTempo").value)
-
-            // Armazena TMO inserida e incrementa i (para o próximo indice)
-            tmosUsadas[i] = [nomeTMO, tempoTMO]
-            i++
-
-            // Apresenta horário inicial
-            minInicio == 0 ? document.getElementById("mostraI").innerHTML = horaInicio + ":" + minInicio + "0" : document.getElementById("mostraI").innerHTML = horaInicio + ":" + minInicio
-
-            // Apaga todos os elementos filhos do local de apontamentos (atualiza a cada inserção - garante a não duplicidade)
-            while(document.getElementById("apontamento").firstChild){
-                document.getElementById("apontamento").removeChild(document.getElementById("apontamento").firstChild)
-            }
-
-            calculaRateio()
-        }
-
-        function calculaRateio (){
-            
-            minTotalCobrado = 0
-            
-            // incrementa a minutos cobrados a cada TMO inserida
-            tmosUsadas.forEach(mo => {minTotalCobrado+= mo[1]})
-
-            tmosUsadas.forEach( (mo) => {
-
-                //Calcula o tempo gasto por TMO
-                let tempoPorTMO = (mo[1] / minTotalCobrado ) * minTotaisGastos
-
-                // Atualiza hora e minutos
-                if (minInicio + tempoPorTMO >= 60){ // Quando altera a hora 
-                    horaInicio = horaInicio + parseInt((minInicio + tempoPorTMO) / 60)
-                    minInicio = parseInt((minInicio + tempoPorTMO) % 60)
-                } else { // Quando não altera a hora
-                    minInicio = parseInt(minInicio + tempoPorTMO)
-                }
-
-                // Cria elemento html e insere as informações de apontamento 
-                let pNomeTMO = document.createElement("p")
-                document.getElementById("apontamento").appendChild(pNomeTMO)
-                pNomeTMO.id = "nomeTMO"
-                pNomeTMO.style = style="width: 60%;height: 30px;background-color: rgb(41, 41, 102); color: whitesmoke; border-radius: 5px;align-items: center;justify-content: center;display: grid;"
-                if (minInicio == 0){
-                    pNomeTMO.innerText = "[ " + horaInicio +":" + minInicio + "0  ]  - " + mo[0]
-                } else if (minInicio < 10){
-                    pNomeTMO.innerText = "[ " + horaInicio +":0" + minInicio + "  ]  - " + mo[0]
-                } else {
-                    pNomeTMO.innerText = "[ " + horaInicio +":" + minInicio + "  ]  - " + mo[0]
-                }
-            
-            })
-        }
-
-        function limpar(){
-
-            // Apaga todos os elementos filhos de #apontamento
-            while(document.getElementById("apontamento").firstChild){
-                document.getElementById("apontamento").removeChild(document.getElementById("apontamento").firstChild)
-            }
-
-            // limpa os valores inseridos
-            tmosUsadas = []
-            document.getElementById("horaF").value = ""
-            document.getElementById("horaI").value = ""
-            document.getElementById("minF").value = ""
-            document.getElementById("minI").value = ""
-            document.getElementById("tmos").value = ""
-            document.getElementById("tmosTempo").value = ""
-            document.getElementById("mostraI").innerHTML = "Horário início"
-        }
-
-    </script>
-
-    <body>
+    <!-- Header -->
+    <header>
+        <div class="label">Sistema de Produção</div>
         <h1>Rateio TMO</h1>
+    </header>
 
-        <div class="box">
-            <div class="box-horarios" >
-                <div class="inicio">
-                    <h3>Início</h3>
-                    <div class="box-hora-minuto">
-                        <p>Hora</p>
-                        <input type="text" id="horaI">
+    <!-- Card: Horários -->
+    <div class="card">
+        <div class="card-title">⏱ Intervalo de Tempo</div>
+        <div class="horarios-grid">
+            <div class="time-group">
+                <div class="time-group-label">
+                    <span class="dot"></span> Início
+                </div>
+                <div class="time-inputs">
+                    <div class="input-wrap">
+                        <label>Hora</label>
+                        <input type="text" id="horaI" placeholder="00">
                     </div>
-                    <div class="box-hora-minuto">
-                        <p>Minutos</p>
-                        <input type="text" id="minI">
+                    <div class="input-wrap">
+                        <label>Min</label>
+                        <input type="text" id="minI" placeholder="00">
                     </div>
                 </div>
-        
-                <div class="final">
-                    <h3>Final</h3>
-                    <div class="box-hora-minuto">
-                        <p>Hora</p>
-                        <input type="text" id="horaF">
+            </div>
+            <div class="time-group">
+                <div class="time-group-label final-label">
+                    <span class="dot"></span> Final
+                </div>
+                <div class="time-inputs">
+                    <div class="input-wrap">
+                        <label>Hora</label>
+                        <input type="text" id="horaF" placeholder="00">
                     </div>
-                    <div class="box-hora-minuto">
-                        <p>Minutos</p>
-                        <input type="text" id="minF">
-                    </div></div>
+                    <div class="input-wrap">
+                        <label>Min</label>
+                        <input type="text" id="minF" placeholder="00">
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="box">
-            <div class="select-tmos">
-                <select name="tmos"  id="tmos">
-                    <option value="Inspeção"> Inspeção</option>
-                    <option value="Filtro de ar do motor"> Filtro Ar Motor</option>
-                    <option value="Alinhamento"> Alinhamento</option>
-                    <option value="Balanceamento"> Balanceamento</option>
-                    <option value="Bateria Examinar"> Bateria Examinar</option>
-                    <option value="Portas Abertas"> Portas Abertas</option>
-                    <option value="Pit Stpo Plus"> Pit Stop Plus</option>
-                    <option value="Mão de Obra Servico Mecanica"> Mão de Obra Servico Mecanica</option>
-                    <option value="Approved Plus Pós Inspeção"> Approved Plus Pós Inspeção</option>
-                    <option value="Material de Limpeza"> Material Limpeza</option>                
+    <!-- Card: Adicionar TMO -->
+    <div class="card">
+        <div class="card-title">＋ Adicionar TMO</div>
+        <div class="tmo-row">
+            <div class="select-wrap">
+                <label>Serviço</label>
+                <select name="tmos" id="tmos">
+                    <option value="Inspeção C/Troca Óleo">Inspeção C/Troca Óleo</option>
+                    <option value="Filtro Ar Motor">Filtro Ar Motor</option>
+                    <option value="Filtro Anti-Polen">Filtro Anti-Polen</option>
+                    <option value="Fluido de Freio">Fluido de Freio</option>
+                    <option value="Fluido Câmbio Aut.">Fluido Câmbio Aut.</option>
+                    <option value="Velas de Ignição">Velas de Ignição</option>
+                    <option value="Higienização Ar Condicionado">Higienização Ar Condicionado</option>
+                    <option value="Limpeza de Dutos A/C">Limpeza de Dutos A/C</option>
+                    <option value="Limpeza de Freios">Limpeza de Freios</option>
+                    <option value="Material Limpeza">Material Limpeza</option>
+                    <option value="Medir Alinhar Suspensão">Medir Alinhar Suspensão</option>
+                    <option value="Balanceamento de Rodas">Balanceamento de Rodas</option>
+                    <option value="Mão de Obra Serviço Mecânica">Mão de Obra Serviço Mecânica</option>
+                    <option value="Pacote Premium">Pacote Premium</option>
+                    <option value="Serviço Seguro Pátio">Serviço Seguro Pátio</option>
+                    <option value="Evaporador Remover e Instalar">Evaporador Remover e Instalar</option>
+                    <option value="Pastilha de Freio Dianteira">Pastilha de Freio Dianteira</option>
+                    <option value="Pastilha de Freio Traseira">Pastilha de Freio Traseira</option>
+                    <option value="Óleo do Haldex">Óleo do Haldex</option>
+                    <option value="Inspeção E-Tron">Inspeção E-Tron</option>
+                    <option value="Cortesia - Diagnóstico e Orçamento">Cortesia - Diagnóstico e Orçamento</option>
+                    <option value="Localização Assistida de Avarias">Localização Assistida de Avarias</option>
+                    <option value="Serviço Troca Óleo Preventivo">Serviço Troca Óleo Preventivo</option>
+                    <option value="Sensor de Rotações Diant. Substituir">Sensor de Rotações Diant. Substituir</option>
+                    <option value="Substituir Lanterna Traseira">Substituir Lanterna Traseira</option>
+                    <option value="Líquido de Arrefecimento">Líquido de Arrefecimento</option>
+                    <option value="Servico de Montagem">Serviço de Montagem</option>
+                    <option value="Limpeza do Motor com Flush">Limpeza do Motor com Flush</option>
+                    <option value="Reparar Maçaneta de Porta">Reparar Maçaneta de Porta</option>
+                    <option value="Codificar Chave Principal">Codificar Chave Principal</option>
+                    <option value="Lampada C/ Descarga Gás">Lâmpada C/ Descarga Gás</option>
+                    <option value="Mangueira Liq. Arrefec.">Mangueira Liq. Arrefec.</option>
+                    <option value="Motor Posicionador Tampa Tanque">Motor Posicionador Tampa Tanque</option>
+                    <option value="Suporte dos Agregados">Suporte dos Agregados</option>
+                    <option value="Serviceweek">Serviceweek</option>
                 </select>
-                <input type="text" id="tmosTempo" placeholder="Tempo cobrado">
-                <button type="text" onclick="guardaTMO()">+</button>
+            </div>
+            <div class="tempo-wrap">
+                <label>Tempo cobrado</label>
+                <input type="text" id="tmosTempo" placeholder="min">
+            </div>
+            <button class="btn-add" onclick="guardaTMO()" title="Adicionar">＋</button>
+        </div>
+    </div>
+
+    <!-- Card: Resultados -->
+    <div class="card" id="results-card">
+        <div class="results-header">
+            <div class="card-title" style="margin-bottom:0">📋 Apontamentos</div>
+            <div style="display:flex;align-items:center;gap:10px">
+                <span class="badge-inicio" id="mostraI">—</span>
+                <button class="btn-clear" onclick="limpar()">Limpar</button>
             </div>
         </div>
+        <div id="apontamento"></div>
+    </div>
 
-        <div id="mostraApontamentos">
-            <button onclick="limpar()"><b>Limpar</b></button>
+    <div class="empty-hint" id="emptyHint">Preencha os horários e adicione TMOs para calcular o rateio</div>
 
-            <div id="mostraInicio">
-                <p id="mostraI"> Horário início: </p>
-            </div>
-            <div id="apontamento"></div>
-            
-        </div>
+</div>
 
+<script>
+    let minTotaisGastos
+    let minTotalCobrado = 0
+    let tmosUsadas = []
+    let hora, min, i = 0
+    let minInicio, horaInicio, minFinal, horaFinal
 
-    </body>
+    function calculaMinTotalGasto(horaFinal, minFinal, horaInicio, minInicio) {
+        let resultado
+        if (minFinal - minInicio == 60) {
+            resultado = (horaFinal - horaInicio) * 60
+        } else {
+            resultado = (horaFinal - horaInicio) * 60
+            if (minFinal == 0) {
+                resultado = (horaFinal - horaInicio - 1) * 60
+                minFinal = 60
+            }
+            resultado += minFinal - minInicio
+        }
+        return resultado
+    }
+
+    function guardaTMO() {
+        horaFinal = parseInt(document.getElementById("horaF").value)
+        minFinal = parseInt(document.getElementById("minF").value)
+        horaInicio = parseInt(document.getElementById("horaI").value)
+        minInicio = parseInt(document.getElementById("minI").value)
+
+        minTotaisGastos = calculaMinTotalGasto(horaFinal, minFinal, horaInicio, minInicio)
+
+        let nomeTMO = document.getElementById("tmos").value
+        let tempoTMO = parseFloat(document.getElementById("tmosTempo").value)
+
+        tmosUsadas[i] = [nomeTMO, tempoTMO]
+        i++
+
+        // Atualiza badge de início
+        let hI = document.getElementById("horaI").value
+        let mI = document.getElementById("minI").value
+        let mIFormatado = parseInt(mI) == 0 ? "00" : (parseInt(mI) < 10 ? "0" + parseInt(mI) : mI)
+        document.getElementById("mostraI").innerText = hI + ":" + mIFormatado
+
+        // Limpa apontamentos anteriores
+        document.getElementById("apontamento").innerHTML = ""
+
+        // Mostra card de resultados
+        document.getElementById("results-card").classList.add("visible")
+        document.getElementById("emptyHint").style.display = "none"
+
+        calculaRateio()
+    }
+
+    function calculaRateio() {
+        minTotalCobrado = 0
+        tmosUsadas.forEach(mo => { minTotalCobrado += mo[1] })
+
+        // Resetar para calcular do início
+        let hI = parseInt(document.getElementById("horaI").value)
+        let mI = parseInt(document.getElementById("minI").value)
+        horaInicio = hI
+        minInicio = mI
+
+        tmosUsadas.forEach((mo) => {
+            let tempoPorTMO = (mo[1] / minTotalCobrado) * minTotaisGastos
+
+            if (minInicio + tempoPorTMO >= 60) {
+                horaInicio = horaInicio + parseInt((minInicio + tempoPorTMO) / 60)
+                minInicio = parseInt((minInicio + tempoPorTMO) % 60)
+            } else {
+                minInicio = parseInt(minInicio + tempoPorTMO)
+            }
+
+            let minFormatado = minInicio == 0 ? "00" : (minInicio < 10 ? "0" + minInicio : minInicio)
+            let timeStr = horaInicio + ":" + minFormatado
+
+            let item = document.createElement("div")
+            item.className = "apontamento-item"
+            item.innerHTML = `
+                <span class="apontamento-time">${timeStr}</span>
+                <div class="apontamento-divider"></div>
+                <span class="apontamento-nome">${mo[0]}</span>
+            `
+            document.getElementById("apontamento").appendChild(item)
+        })
+    }
+
+    function limpar() {
+        tmosUsadas = []
+        i = 0
+        document.getElementById("horaF").value = ""
+        document.getElementById("horaI").value = ""
+        document.getElementById("minF").value = ""
+        document.getElementById("minI").value = ""
+        document.getElementById("tmos").selectedIndex = 0
+        document.getElementById("tmosTempo").value = ""
+        document.getElementById("mostraI").innerText = "—"
+        document.getElementById("apontamento").innerHTML = ""
+        document.getElementById("results-card").classList.remove("visible")
+        document.getElementById("emptyHint").style.display = "block"
+    }
+</script>
+</body>
 </html>
