@@ -1,4 +1,4 @@
-# Rateio Apontamentos - Produtivos
+# ProductivityTracker
 
 Este projeto foi desenvolvido para resolver um problema prático identificado no dia a dia no trabalho. Em determinadas situações, o sistema utilizado não calculou corretamente a taxa de taxa. Para agilizar o processo e evitar cálculos manuais, criei este site funcional em apenas um dia.
 
